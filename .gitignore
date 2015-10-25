@@ -1,0 +1,11 @@
+/_build
+/cover
+/deps
+erl_crash.dump
+*.ez
+
+# This is where I put experiments I want do not want to delete now, but do not want to commit
+attic
+
+# OS X
+.DS_Store

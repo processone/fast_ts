@@ -1,0 +1,27 @@
+defmodule FastTS.Mixfile do
+  use Mix.Project
+
+  def project do
+    [app: :fast_ts,
+     version: "0.0.1",
+     elixir: "~> 1.1",
+     build_embedded: Mix.env == :prod,
+     start_permanent: Mix.env == :prod,
+     deps: deps(Mix.env)]
+  end
+
+  def application do
+    [applications: [:logger],
+     mod: {FastTS, []}
+    ]
+  end
+
+  defp deps(:prod) do
+    [{:exprotobuf, "~> 0.11.0"}]
+  end
+  
+  defp deps(_) do
+    deps(:prod) ++
+      [{:dialyze, "~> 0.2.0"}]
+  end
+end
