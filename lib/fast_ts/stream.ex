@@ -31,7 +31,7 @@ defmodule FastTS.Stream do
       end,
       fn(event = %Event{metric_f: metric}) ->
         [count: count] = :ets.lookup(ets, :count)
-        :ets.insert(ets, {:count, count + metric})
+        :ets.insert(ets, {:count, count + (metric||0)})
         :ets.insert(ets, {:state, event})
         :defer
       end,
@@ -47,7 +47,7 @@ defmodule FastTS.Stream do
       end)
   end
 
-  # TODO: when we when to stop stream, we need to stop timer
+  # TODO: when we want to stop stream, we need to stop timer
   defp partition_time(table, interval, create, add, finish) do
     create.()
     startTS = :erlang.system_time(:seconds)
