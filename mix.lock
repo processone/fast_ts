@@ -1,4 +1,5 @@
 %{"dialyze": {:hex, :dialyze, "0.2.0"},
+  "eqc_ex": {:hex, :eqc_ex, "1.2.3"},
   "erlang_protobuffs": {:git, "https://github.com/basho/erlang_protobuffs.git", "d64ada24cf0479bcf3358bd67b3fb3d654ae1990", [branch: "master"]},
   "exprotobuf": {:hex, :exprotobuf, "0.11.0"},
   "gpb": {:hex, :gpb, "3.18.8"},
