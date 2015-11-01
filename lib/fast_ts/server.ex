@@ -3,6 +3,7 @@ defmodule FastTS.Server do
   @doc """
   Starts accepting connections on the give `port`.
   """
+  @spec accept(port :: integer) :: no_return
   def accept(port) do
     {:ok, socket} = :gen_tcp.listen(port, [:binary, packet: 4, active: false, reuseaddr: true])
     IO.puts "Accepting connections on port #{port}"
