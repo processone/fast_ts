@@ -1,6 +1,7 @@
-/_build
-/cover
-/deps
+_build
+cover
+deps
+.rebar
 erl_crash.dump
 *.ez
 
