@@ -1,10 +1,11 @@
 defmodule HelloFast.Router do
-  # use FastTS.Router
+  use FastTS.Router
 
-  alias RiemannProto.Event
-  alias FastTS.Stream
+# Added by FastTS.Router
+#  alias RiemannProto.Event
+#  alias FastTS.Stream
 
-  #defstream localhost(%Event{host: "localhost"} do
+  #defstream localhost(%Event{host: "localhost"}) do
   # rate(5)
   # stdout
   #end
@@ -27,5 +28,5 @@ defmodule HelloFast.Router do
   end
   # Catch all case: We have no stream matching that event
   def do_stream(_, _), do: :do_nothing
-
+   
 end
