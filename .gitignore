@@ -10,3 +10,8 @@ attic
 
 # OS X
 .DS_Store
+
+# Intellij
+.idea
+fast_ts.iml
+
