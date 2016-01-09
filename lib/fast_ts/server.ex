@@ -41,7 +41,7 @@ defmodule FastTS.Server do
   defp process_data(data) do
     RiemannProto.Msg.decode(data)
     |> extract_events
-    |> Enum.map &stream_event/1
+    |> Enum.map(&stream_event/1)
   end
   
   defp extract_events(%RiemannProto.Msg{events: events}), do: events
