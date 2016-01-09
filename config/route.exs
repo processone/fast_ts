@@ -1,11 +1,15 @@
 defmodule HelloFast.Router do
   use FastTS.Router
 
-# Added by FastTS.Router
-#  alias RiemannProto.Event
-#  alias FastTS.Stream
+  # When build, we will have a new function to call:
+  # iex(1)> HelloFast.Router."Calculate Rate and Broadcast"
+  # We are running pipeline CRaB
+  # :ok
+  pipeline "Calculate Rate and Broadcast" do
+    IO.puts "We are running pipeline CRaB"
+  end
 
-  #defstream localhost(%Event{host: "localhost"}) do
+  #pipeline localhost(%Event{host: "localhost"}) do
   # rate(5)
   # stdout
   #end
