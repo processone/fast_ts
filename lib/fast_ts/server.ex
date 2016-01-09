@@ -10,6 +10,7 @@ defmodule FastTS.Server do
     loop_acceptor(socket)
   end
 
+  # TODO Fixme, we can only support one client
   defp loop_acceptor(socket) do
     {:ok, client} = :gen_tcp.accept(socket)
     # {:ok, pid} = Task.Supervisor.start_child(Fast.Stream.Server, fn -> serve(client) end)
@@ -19,6 +20,7 @@ defmodule FastTS.Server do
   end
 
   def serve(socket) do
+    # TODO Use Elixir logger
     IO.puts "Client connected"
     socket
     |> read_message
@@ -47,7 +49,7 @@ defmodule FastTS.Server do
 
   defp stream_event(event) do
     # TODO:
-    # - Do not use a hardcoded router module name
+    # - Do not use a hardcoded router module name (allow registering with the use macro from router ?)
     # - Catch to avoid crash and report errors
     HelloFast.Router.stream event
   end

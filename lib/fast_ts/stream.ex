@@ -6,7 +6,7 @@ defmodule FastTS.Stream do
   Print event struct on stdout
   """
   def stdout, do: &(stdout(&1, &2, 0))
-  # TODO: can we simplify this and directly return do stdout ?
+  # TODO: can we simplify this and directly return do_stdout ?
   def stdout(_ets, _pid, _interval), do: &(do_stdout(&1))
   def do_stdout(event) do
     IO.puts "#{inspect event}"
@@ -14,7 +14,7 @@ defmodule FastTS.Stream do
   end
 
   @doc """
-  Calculate rate of a given event per second, assuming metric is an occurance count
+  Calculate rate of a given event per second, assuming metric is an occurence count
 
   Bufferize events for N second interval and divide total count by interval in second.
   On interval tick: 
