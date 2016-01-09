@@ -1,14 +1,14 @@
 defmodule HelloFast.Router do
   use FastTS.Router
 
-  # When build, we will have a new function to call:
-  # iex(1)> HelloFast.Router."Calculate Rate and Broadcast"
-  # We are running pipeline CRaB
-  # :ok
   pipeline "Calculate Rate and Broadcast" do
     IO.puts "We are running pipeline CRaB"
   end
 
+  pipeline "Second pipeline" do
+    IO.puts "We can have more than one pipeline"
+  end
+  
   #pipeline localhost(%Event{host: "localhost"}) do
   # rate(5)
   # stdout
