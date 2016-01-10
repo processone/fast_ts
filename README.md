@@ -12,6 +12,11 @@ It is a framework: the platform is configurable with a high-level Elixir-base Do
 
 The project is inspired by ideas introduced by Phoenix Framework and Riemann.
 
+The current version design has one process per pipeline step and pass
+data down the pipeline through message passing. Riemann use function
+calls between pipeline steps. We may offer such a option in a next
+version.
+
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
