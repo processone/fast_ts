@@ -13,6 +13,7 @@ defmodule FastTS.Router do
       # Delay the generation of some method to a last pass to allow getting the full result of the pipeline
       # accumulation (it will be done in macro __before_compile__/1
       @before_compile unquote(__MODULE__)
+
     end
   end
 
@@ -29,6 +30,12 @@ defmodule FastTS.Router do
             {name, apply(__MODULE__, name, [])}
           end)
       end
+
+      def stream(event) do
+        streams |>
+          Enum.each( fn({name, _pipeline}) -> send(name, event) end)
+      end
+
     end
   end
 

@@ -20,11 +20,6 @@ defmodule HelloFast.Router do
   pipeline "Empty pipeline should be ignored" do
   end
   
-  def stream(event) do
-    streams |>
-      Enum.each( fn({name, _pipeline}) -> send(name, event) end)
-  end
-
   # TODO we need filter / matching
   #pipeline localhost(%Event{host: "localhost"}) do
   # rate(5)
