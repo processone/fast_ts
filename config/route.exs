@@ -7,6 +7,7 @@ defmodule HelloFast.Router do
 #  end
 
   pipeline "Basic pipeline" do
+    Stream.under(12)
     Stream.stdout
   end
   
