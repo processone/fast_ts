@@ -39,4 +39,4 @@ You can test injecting data with the Riemann protocol.
 
 You can for example try [Riemann Python client](https://github.com/borntyping/python-riemann-client):
 
-    riemann-client send -h localhost -s test -t test -t test2
+    riemann-client send -h localhost -s test -t test -t test2 -m 12
