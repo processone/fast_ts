@@ -1,12 +1,22 @@
 defmodule HelloFast.Router do
   use FastTS.Router
-
+  
   pipeline "Calculate Rate and Broadcast" do
+    # filter(is_server(%Event{host: "localhost"}))
     IO.puts "We are running pipeline CRaB"
   end
 
+  # For now, we assume that we can only put pipeline function in the block
   pipeline "Second pipeline" do
-    IO.puts "We can have more than one pipeline"
+    Stream.rate(5)
+    Stream.stdout
+  end
+
+  pipeline "Return list of steps" do
+    [Stream.rate(5), Stream.stdout]
+  end
+
+  pipeline "Empty pipeline should be ignored" do
   end
   
   #pipeline localhost(%Event{host: "localhost"}) do

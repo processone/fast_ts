@@ -5,7 +5,7 @@ defmodule FastTS.Router do
       alias FastTS.Stream
 
       # Needed to be able to inject pipeline macro in the module using FastTS.Router:
-      import unquote(__MODULE__)
+      import unquote(__MODULE__), only: [pipeline: 2]
       
       # Define pipelines module attribute as accumulator:
       Module.register_attribute __MODULE__, :pipelines, accumulate: true
@@ -16,10 +16,7 @@ defmodule FastTS.Router do
     end
   end
 
-  # list_pipelines is now defined and print the correct list of defined pipelines when called:
-  # iex(1)> HelloFast.Router.list_pipelines
-  # Defined pipelines in the router: [:"Second pipeline", :"Calculate Rate and Broadcast"]
-  # :ok
+  # list_pipelines is added to module and print the correct list of defined pipelines when called
   defmacro __before_compile__(_env) do
     quote do
       def list_pipelines do
@@ -27,12 +24,32 @@ defmodule FastTS.Router do
       end
     end
   end
-  
+
+  # To make sure, we generate properly the pipeline, a pipeline can
+  # only use a sequence of operation defined in the stream API
   defmacro pipeline(description, do: pipeline_block) do
     pipeline_name = String.to_atom(description)
-    quote do
-      @pipelines unquote(pipeline_name)
-      def unquote(pipeline_name)(), do: unquote(pipeline_block)
+
+    # Transform the block call in a list of function calls
+    block = case pipeline_block do
+              nil ->
+                nil
+              {:__block__, [], block_sequence} ->
+                block_sequence
+              single_op ->
+                [single_op]
+            end
+    IO.puts "==== injected block = #{inspect block}"
+
+    case block do
+      #
+      nil ->
+        IO.puts "Ignoring empty pipeline '#{description}'"
+      _ ->
+        quote do
+          @pipelines unquote(pipeline_name)
+          def unquote(pipeline_name)(), do: unquote(block)
+        end
     end
   end
 
