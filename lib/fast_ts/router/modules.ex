@@ -1,3 +1,4 @@
+# TODO Module should be renamed registry
 defmodule FastTS.Router.Modules do
   @doc """
   Router agent: Keeps and serves the list of router modules.
