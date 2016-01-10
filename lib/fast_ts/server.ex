@@ -48,9 +48,9 @@ defmodule FastTS.Server do
 
   defp stream_event(event) do
     # TODO:
-    # - Do not use a hardcoded router module name (allow registering with the use macro from router ?)
     # - Catch to avoid crash and report errors
-    HelloFast.Router.stream event
+    FastTS.Router.Modules.get
+    |> Enum.each(fn(module) -> apply(module, :stream, [event]) end)
   end
 
 end

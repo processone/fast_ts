@@ -1,4 +1,5 @@
 defmodule FastTS.Router do
+
   defmacro __using__(_options) do
     quote do
       alias RiemannProto.Event
@@ -14,12 +15,15 @@ defmodule FastTS.Router do
       # accumulation (it will be done in macro __before_compile__/1
       @before_compile unquote(__MODULE__)
 
+      FastTS.Router.register_router(__MODULE__)
     end
   end
 
   # list_pipelines is added to module and print the correct list of defined pipelines when called
   defmacro __before_compile__(_env) do
     quote do
+
+      
       def list_pipelines do
         IO.puts "Defined pipelines in the router: #{inspect @pipelines}"
       end
@@ -66,4 +70,9 @@ defmodule FastTS.Router do
     end
   end
 
+  def register_router(module) do
+    IO.puts "Registering Router module: #{inspect module}"
+    FastTS.Router.Modules.register(module)
+  end
+  
 end

@@ -9,7 +9,11 @@ defmodule FastTS.Supervisor do
   def init([]) do
     # TODO: We generate a spec id based on index, but pipeline id
     # should probably be generated when compiling the router
-    streams = Enum.map(Enum.with_index(HelloFast.Router.streams),
+    modules = FastTS.Router.Modules.get |> Enum.reduce([], fn(module, acc) ->
+      apply(module, :streams, []) ++ acc
+    end)
+
+    streams = Enum.map(Enum.with_index(modules),
       fn({{name, pipeline}, index}) ->
         worker(FastTS.Stream.Pipeline, [name, pipeline], id: index ) end)
     children = streams ++
@@ -23,7 +27,7 @@ defmodule FastTS.Supervisor do
   # TODO set_routes should be part of the pipeline supervision process
   # -> Or maybe not, as of today, pipeline steps are linked process, the whole pipeline is restarted in case of crash, which is what we want
   defp set_routes do
-    # TODO: Read file name from config
+    FastTS.Router.Modules.start_link()
     Code.load_file "config/route.exs"
   end
 
