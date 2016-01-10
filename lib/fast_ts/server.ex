@@ -11,12 +11,10 @@ defmodule FastTS.Server do
     loop_acceptor(socket)
   end
 
-  # TODO Fixme, we can only support one client
   defp loop_acceptor(socket) do
     {:ok, client} = :gen_tcp.accept(socket)
-    # {:ok, pid} = Task.Supervisor.start_child(Fast.Stream.Server, fn -> serve(client) end)
-    # :ok = :gen_tcp.controlling_process(client, pid)
-    serve(client)
+    pid = spawn(fn -> serve(client) end)
+    :ok = :gen_tcp.controlling_process(client, pid)
     loop_acceptor(socket)
   end
 
