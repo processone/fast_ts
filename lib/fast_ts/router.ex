@@ -22,6 +22,13 @@ defmodule FastTS.Router do
       def list_pipelines do
         IO.puts "Defined pipelines in the router: #{inspect @pipelines}"
       end
+
+      def streams do
+        Enum.map(@pipelines,
+          fn(name) ->
+            {name, apply(__MODULE__, name, [])}
+          end)
+      end
     end
   end
 
@@ -29,7 +36,7 @@ defmodule FastTS.Router do
   # only use a sequence of operation defined in the stream API
   defmacro pipeline(description, do: pipeline_block) do
     pipeline_name = String.to_atom(description)
-
+    
     # Transform the block call in a list of function calls
     block = case pipeline_block do
               nil ->
@@ -39,7 +46,6 @@ defmodule FastTS.Router do
               single_op ->
                 [single_op]
             end
-    IO.puts "==== injected block = #{inspect block}"
 
     case block do
       #

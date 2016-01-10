@@ -7,8 +7,11 @@ defmodule FastTS.Supervisor do
   end
 
   def init([]) do
-    streams = Enum.map(HelloFast.Router.streams,
-      fn({name, pipeline}) -> worker(FastTS.Stream.Pipeline, [name, pipeline]) end)
+    # TODO: We generate a spec id based on index, but pipeline id
+    # should probably be generated when compiling the router
+    streams = Enum.map(Enum.with_index(HelloFast.Router.streams),
+      fn({{name, pipeline}, index}) ->
+        worker(FastTS.Stream.Pipeline, [name, pipeline], id: index ) end)
     children = streams ++
       [
         # TODO: Make port configurable

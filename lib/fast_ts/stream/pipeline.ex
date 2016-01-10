@@ -2,7 +2,7 @@ defmodule FastTS.Stream.Pipeline do
   use GenServer
 
   @type pipeline :: list({:stateful, fun})
-  @spec start_link(name :: atom, pipeline :: pipeline) :: :ignore | {:error, any} | {:ok, pid}
+  @spec start_link(name :: string, pipeline :: pipeline) :: :ignore | {:error, any} | {:ok, pid}
   def start_link(_name, []), do: :ignore
   def start_link(name, pipeline) do
     GenServer.start_link(__MODULE__, [name, pipeline])
@@ -15,6 +15,7 @@ defmodule FastTS.Stream.Pipeline do
   # Stateful start_fun takes parameters ets_table and pid of the next process in pipeline
   # stateless fun directly pass a basic add event fun receiving event as parameter. They bypass the ets table creation
   def init([name, pipeline]) do
+    process = process_name(name)
     pipeline
     |> Enum.reverse
     |> Enum.reduce(
@@ -24,9 +25,9 @@ defmodule FastTS.Stream.Pipeline do
         ({:stateless, add_event_fun}, pid) ->
           spawn_link( fn -> do_loop(add_event_fun, pid) end)
       end)
-    |> Process.register(name)
+    |> Process.register(process)
     
-    state = [name, pipeline]
+    state = [process, pipeline]
     {:ok, state}
   end
 
@@ -58,5 +59,9 @@ defmodule FastTS.Stream.Pipeline do
     end
     do_loop(fun, pid)
   end
+
+  # Helper
+  defp process_name(name) when is_atom(name), do: name
+  defp process_name(name) when is_binary(name), do: String.to_atom(name)
   
 end
