@@ -23,7 +23,8 @@ defmodule FastTS.Mixfile do
   defp deps(_) do
     deps(:prod) ++
       [{:dialyze, "~> 0.2.0"},
-       {:eqc_ex, "~> 1.2.3"}
+       {:eqc_ex, "~> 1.2.3"},
+       {:exrm, "~> 0.18.1"}
       ]
   end
 end
