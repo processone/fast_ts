@@ -36,12 +36,11 @@ defmodule FastTS.Supervisor do
   end
   
   defp get_route_files do
-    route_dir = Application.get_env(:fast_ts, :route_dir)
-    case route_dir do
+    case get_route_dir do
       nil ->
         Logger.warning "No fast_ts route_dir configured: Using route file 'config/route.exs'"
         ["config/route.exs"]
-      _ ->
+      route_dir ->
         {:ok, files} = File.ls(route_dir)
         exs_files = Enum.reduce(files, [],
           fn(file, acc) ->
@@ -60,6 +59,18 @@ defmodule FastTS.Supervisor do
           _ ->
             exs_files
         end
+    end
+  end
+
+  # First try to read route dir from FTS_ROUTE_DIR environment
+  # variable, then try value from config file
+  defp get_route_dir do
+    env_route_dir = System.get_env("FTS_ROUTE_DIR")
+    case env_route_dir do
+      nil ->
+        Application.get_env(:fast_ts, :route_dir)
+      _ ->
+        env_route_dir
     end
   end
 end
