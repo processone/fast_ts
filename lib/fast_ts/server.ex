@@ -1,13 +1,14 @@
 defmodule FastTS.Server do
 
+  require Logger
+  
   @doc """
   Starts accepting connections on the give `port`.
   """
   @spec accept(port :: integer) :: no_return
   def accept(port) do
     {:ok, socket} = :gen_tcp.listen(port, [:binary, packet: 4, active: false, reuseaddr: true])
-    # TODO move to logger
-    IO.puts "Accepting connections on port #{port}"
+    Logger.info "Accepting connections on port #{port}"
     loop_acceptor(socket)
   end
 
@@ -19,8 +20,7 @@ defmodule FastTS.Server do
   end
 
   def serve(socket) do
-    # TODO Use Elixir logger
-    IO.puts "Client connected"
+    Logger.debug "Client connected"
     socket
     |> read_message
     |> send_response

@@ -1,9 +1,11 @@
 defmodule FastTS.Router do
-
+  require Logger
+  
   defmacro __using__(_options) do
     quote do
       alias RiemannProto.Event
       import FastTS.Stream
+
 
       # Needed to be able to inject pipeline macro in the module using FastTS.Router:
       import unquote(__MODULE__), only: [pipeline: 2]
@@ -22,12 +24,7 @@ defmodule FastTS.Router do
   # list_pipelines is added to module and print the correct list of defined pipelines when called
   defmacro __before_compile__(_env) do
     quote do
-
       
-      def list_pipelines do
-        IO.puts "Defined pipelines in the router: #{inspect @pipelines}"
-      end
-
       def streams do
         Enum.map(@pipelines,
           fn(name) ->
@@ -61,7 +58,7 @@ defmodule FastTS.Router do
     case block do
       #
       nil ->
-        IO.puts "Ignoring empty pipeline '#{description}'"
+        Logger.info "Ignoring empty pipeline '#{description}'"
       _ ->
         quote do
           @pipelines unquote(pipeline_name)
@@ -71,7 +68,7 @@ defmodule FastTS.Router do
   end
 
   def register_router(module) do
-    IO.puts "Registering Router module: #{inspect module}"
+    Logger.info "Registering Router module: #{inspect module}"
     FastTS.Router.Modules.register(module)
   end
   
