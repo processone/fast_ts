@@ -7,15 +7,15 @@ defmodule HelloFast.Router do
 #  end
 
   pipeline "Basic pipeline" do
-    Stream.under(12)
-    Stream.stdout
+    under(12)
+    stdout
   end
   
   # For now, we assume that we can only put pipeline function in the block
   # TODO We need to add more consistency checks on the content of the pipeline
   pipeline "Second pipeline" do
-    Stream.rate(5)
-    Stream.stdout
+    rate(5)
+    stdout
   end
 
   pipeline "Empty pipeline should be ignored" do
@@ -26,5 +26,5 @@ defmodule HelloFast.Router do
   # rate(5)
   # stdout
   #end
-  
+
 end

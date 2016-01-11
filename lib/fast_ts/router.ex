@@ -3,7 +3,7 @@ defmodule FastTS.Router do
   defmacro __using__(_options) do
     quote do
       alias RiemannProto.Event
-      alias FastTS.Stream
+      import FastTS.Stream
 
       # Needed to be able to inject pipeline macro in the module using FastTS.Router:
       import unquote(__MODULE__), only: [pipeline: 2]
