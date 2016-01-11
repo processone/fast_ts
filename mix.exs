@@ -17,14 +17,14 @@ defmodule FastTS.Mixfile do
   end
 
   defp deps(:prod) do
-    [{:exprotobuf, "~> 0.11.0"}]
+    [{:exprotobuf, "~> 0.11.0"},
+     {:exrm, "~> 1.0.0-rc7"}]
   end
   
   defp deps(_) do
     deps(:prod) ++
       [{:dialyze, "~> 0.2.0"},
-       {:eqc_ex, "~> 1.2.3"},
-       {:exrm, "~> 1.0.0-rc7"}
+       {:eqc_ex, "~> 1.2.3"}
       ]
   end
 end
