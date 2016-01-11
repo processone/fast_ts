@@ -1,12 +1,8 @@
 defmodule HelloFast.Router do
   use FastTS.Router
   
-#  pipeline "Calculate Rate and Broadcast" do
-    # filter(is_server(%Event{host: "localhost"}))
-#    IO.puts "We are running pipeline CRaB"
-#  end
-
   pipeline "Basic pipeline" do
+    # We only take functions under a given value
     under(12)
     stdout
   end
@@ -22,9 +18,14 @@ defmodule HelloFast.Router do
   end
   
   # TODO we need filter / matching
-  #pipeline localhost(%Event{host: "localhost"}) do
-  # rate(5)
-  # stdout
-  #end
+  # pipeline localhost(%Event{host: "localhost"}) do
+  #   rate(5)
+  #   stdout
+  # end
 
+  # pipeline "Calculate Rate and Broadcast" do
+  #   filter(is_server(%Event{host: "localhost"}))
+  #   IO.puts "We are running pipeline CRaB"
+  # end
+  
 end
