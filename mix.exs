@@ -11,7 +11,7 @@ defmodule FastTS.Mixfile do
   end
 
   def application do
-    [applications: [:logger],
+    [applications: [:logger, :exprotobuf, :gpb],
      mod: {FastTS, []}
     ]
   end
@@ -24,7 +24,7 @@ defmodule FastTS.Mixfile do
     deps(:prod) ++
       [{:dialyze, "~> 0.2.0"},
        {:eqc_ex, "~> 1.2.3"},
-       {:exrm, "~> 0.18.1"}
+       {:exrm, "~> 1.0.0-rc7"}
       ]
   end
 end
