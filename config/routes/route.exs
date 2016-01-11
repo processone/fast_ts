@@ -1,5 +1,7 @@
 defmodule HelloFast.Router do
   use FastTS.Router
+
+  @mail %{from: "mremond@test.com"}
   
   pipeline "Basic pipeline" do
     # We only take functions under a given value
@@ -14,7 +16,7 @@ defmodule HelloFast.Router do
     stdout
   end
 
-  pipeline "Empty pipeline should be ignored" do
+  pipeline "Empty pipeline are ignored" do
   end
   
   # TODO we need filter / matching
