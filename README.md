@@ -36,7 +36,7 @@ You can first checkout FastTS from Github:
 Download dependencies and compile the project:
    
     mix deps.get
-    mix compile
+    MIX_ENV=prod mix compile
 
 You can then tweak the file in config directory. Most notably you can
 tweak the example time series route example file: `config/route.exs`
@@ -68,7 +68,7 @@ log file events printed to STDOUT:
 
 For deployment, you can then prepare a release directory:
 
-    mix release
+    MIX_ENV=prod mix release
 
 You can then test your release locally. Go to release dir:
 
@@ -91,6 +91,75 @@ For deploy you can simply compress the whole rel/ directory and
 uncompress it on server. It contains all needed code, including Erlang
 VM and Elixir environment.
 
+## Build Docker container 
+
+The following commands will prepare a container to run FastTS:
+
+    mix deps.get
+    MIX_ENV=prod mix compile
+    MIX_ENV=prod mix release
+    docker build -t fast_ts .
+
+You can then run FastTS container on a Docker host with the default
+with the default embedded FastTS route file:
+
+    $ docker run --rm -p 5555:5555 fast_ts
+    Using /fast_ts/releases/0.0.1/fast_ts.sh
+    created directory: '/fast_ts/running-config'
+    Exec: /usr/lib/erlang/erts-7.1/bin/erlexec -noshell -noinput +Bd -boot /fast_ts/releases/0.0.1/fast_ts -mode embedded -config /fast_ts/running-config/sys.config -boot_var ERTS_LIB_DIR /usr/lib/erlang/erts-7.1/../lib -env ERL_LIBS /fast_ts/lib -args_file /fast_ts/running-config/vm.args -- foreground
+    Root: /fast_ts
+    
+    18:18:22.875 [info]  Ignoring empty pipeline 'Empty pipeline are ignored'
+
+    18:18:22.879 [info]  Registering Router module: HelloFast.Router
+
+    18:18:22.886 [info]  Accepting connections on port 5555
+
+If you want to start FastTS on Docker with your own route scripts, you
+can mount a route directory volume on your Docker host and pass it as
+FTS_ROUTE_DIR environment variable:
+
+    docker run -v "$PWD/config/docker":/opt/routes -e "FTS_ROUTE_DIR=/opt/routes" --rm -p 5555:5555 fast_ts
+
+Note: The previous command assume that you are using it from docker
+host or that your local Docker Machine as the proper directory
+mounted. This is the case for example with Docker Machine on OSX, that
+grant access to Docker host to everything under `/Users`. That's why
+the previous command should work as is.
+
+## Using the test client with your Docker container
+
+You need IP of your docker machine. If you do not have it, you can get
+environment of your docker-machine with:
+
+    $ docker-machine env default
+    export DOCKER_TLS_VERIFY="1"
+    export DOCKER_HOST="tcp://192.168.99.100:2376"
+    export DOCKER_CERT_PATH="/Users/mremond/.docker/machine/machines/default"
+    export DOCKER_MACHINE_NAME="default"
+    # Run this command to configure your shell:
+    # eval "$(docker-machine env default)"
+
+You can this pass the IP addresse of the Docker host (or hostname if
+you have any set up) with `riemann-client -H` option:
+
+
+    $ riemann-client -H 192.168.99.100 send  -h localhost -s web -t latency -t dev -m 120
+    {
+      "host": "localhost",
+      "metric_f": 120.0,
+      "service": "web",
+      "tags": [
+        "latency",
+        "dev"
+      ]
+    }
+
+You should see the following log entry in your attached FastTS Docker container:
+
+    %RiemannProto.Event{attributes: [], description: nil, host: "localhost", metric_d: nil, metric_f: 24.0, metric_sint64: nil, service: "web", state: nil, tags: ["latency", "dev"], time: 1452535525, ttl: nil}
+
+
 ## Embbed FastTS in your own app
 
 Embedding FastTS into your app will allow you to have your own metrics
@@ -108,7 +177,7 @@ Embedding FastTS into your app will allow you to have your own metrics
           [applications: [:fast_ts]]
         end
 
-## Defining your metrics / time series routes
+## Defining your metrics router
 
 Here is an example file showing a basic FastTS route script:
 
