@@ -117,7 +117,7 @@ with the default embedded FastTS route file:
 
 If you want to start FastTS on Docker with your own route scripts, you
 can mount a route directory volume on your Docker host and pass it as
-FTS_ROUTE_DIR environment variable:
+`FTS_ROUTE_DIR` environment variable:
 
     docker run -v "$PWD/config/docker":/opt/routes -e "FTS_ROUTE_DIR=/opt/routes" --rm -p 5555:5555 fast_ts
 
