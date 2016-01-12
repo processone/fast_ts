@@ -1,7 +1,7 @@
 defmodule FastTS.Stream.Pipeline do
   use GenServer
 
-  @type pipeline :: list({:stateful, fun})
+  @type pipeline :: list({:stateful, fun}|{:stateless, fun})
   @spec start_link(name :: string, pipeline :: pipeline) :: :ignore | {:error, any} | {:ok, pid}
   def start_link(_name, []), do: :ignore
   def start_link(name, pipeline) do
@@ -11,7 +11,7 @@ defmodule FastTS.Stream.Pipeline do
   # Create a chained list of process to pass events through the pipeline
   # A pipeline is composed of a list of 'start' anonymous function. start function
   # They return the function to perform to add an event.
-  # pipeline = [{"stateful, start_fun/2}]
+  # pipeline = [{:stateful, start_fun/2}|{:stateless, add_event_fun/1}]
   # Stateful start_fun takes parameters ets_table and pid of the next process in pipeline
   # stateless fun directly pass a basic add event fun receiving event as parameter. They bypass the ets table creation
   def init([name, pipeline]) do
@@ -37,7 +37,7 @@ defmodule FastTS.Stream.Pipeline do
   def next(result, pid), do: send(pid, result)
 
   # We start one loop per steps in the pipeline. Each pipeline step is a process.
-  #E
+  #
   # TODO create a supervisor per pipeline, place each pipeline supervisor under a stream supervisor
   # TODO Optimize that: For now we create one ETS per loop. ETS table is only needed when we are using time buckets. We do not need to create it otherwise
   # TODO One table ETS per stateful pipeline stage is propably overkill. We may have one ETS table per stream or even one ETS table for all
