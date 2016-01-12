@@ -21,17 +21,29 @@ defmodule FastTS.Server do
 
   def serve(socket) do
     Logger.debug "Client connected"
-    socket
-    |> read_message
-    |> send_response
+    result = socket |> read_message |> send_response
+    case result do
+      :stop ->
+        :stop
+      _ ->
+        serve(socket)
+    end
   end
 
   defp read_message(socket) do
-    {:ok, data} = :gen_tcp.recv(socket, 0)
-    process_data(data)
-    socket
+    case :gen_tcp.recv(socket, 0) do
+      {:ok, data} ->
+        process_data(data)
+        socket
+      {:error, :closed} ->
+        :stop
+      {:error, reason} ->
+        Logger.debug("Error reading message on socket: #{reason}")
+        :stop
+    end
   end
 
+  defp send_response(:stop), do: :stop
   defp send_response(socket) do
     msg = RiemannProto.Msg.encode(RiemannProto.Msg.new(ok: true))
     :gen_tcp.send(socket, msg)
