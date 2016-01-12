@@ -5,7 +5,7 @@ RUN apk --update add erlang-crypto erlang-sasl && rm -rf /var/cache/apk/*
 ENV APP_NAME fast_ts
 ENV APP_VERSION "0.0.1"
 ENV PORT 5555
-ENV FST_ROUTE_DIR /$APP_NAME/routes
+ENV FTS_ROUTE_DIR /$APP_NAME/routes
 
 RUN mkdir -p /$APP_NAME
 ADD rel/$APP_NAME/bin /$APP_NAME/bin

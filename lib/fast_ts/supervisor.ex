@@ -65,7 +65,7 @@ defmodule FastTS.Supervisor do
   # First try to read route dir from FTS_ROUTE_DIR environment
   # variable, then try value from config file
   defp get_route_dir do
-    env_route_dir = System.get_env("FST_ROUTE_DIR")
+    env_route_dir = System.get_env("FTS_ROUTE_DIR")
     case env_route_dir do
       nil ->
         Application.get_env(:fast_ts, :route_dir)
