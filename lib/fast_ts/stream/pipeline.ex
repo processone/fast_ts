@@ -20,10 +20,10 @@ defmodule FastTS.Stream.Pipeline do
     |> Enum.reverse
     |> Enum.reduce(
       nil,
-      fn({:stateful, start_fun}, pid) ->
-          spawn_link( fn -> set_loop_state(start_fun, pid) end )
-        ({:stateless, add_event_fun}, pid) ->
-          spawn_link( fn -> do_loop(add_event_fun, pid) end)
+      fn({:stateful, start_fun}, next_pid) ->
+          spawn_link( fn -> set_loop_state(start_fun, next_pid) end )
+        ({:stateless, add_event_fun}, next_pid) ->
+          spawn_link( fn -> do_loop(add_event_fun, next_pid) end)
       end)
     |> Process.register(process)
     
@@ -39,25 +39,21 @@ defmodule FastTS.Stream.Pipeline do
   # We start one loop per steps in the pipeline. Each pipeline step is a process.
   #
   # TODO create a supervisor per pipeline, place each pipeline supervisor under a stream supervisor
-  # TODO Optimize that: For now we create one ETS per loop. ETS table is only needed when we are using time buckets. We do not need to create it otherwise
-  # TODO One table ETS per stateful pipeline stage is propably overkill. We may have one ETS table per stream or even one ETS table for all
-  # = More generally, I need to refactor how the state are kept: Likely the best way is to have an Elixir agent per state.
-  def set_loop_state(start_fun, pid) do
-    # TODO: for now the name is fixed, so it will not work for many pipelines
-    table = :ets.new(:pipeline_stage_data, [:public])
-    add_event_fun = start_fun.(table, pid)
-    do_loop(add_event_fun, pid)
+  def set_loop_state(start_fun, next_pid) do
+    {:ok, context} = FastTS.Stream.Context.start_link
+    add_event_fun = start_fun.(context, next_pid)
+    do_loop(add_event_fun, next_pid)
   end
 
-  def do_loop(fun, pid) do
+  def do_loop(fun, next_pid) do
     receive do
       # TODO we can probably receive an event to reset state in the loop to avoid race condition between receive event / reset
       event ->
         event
         |> fun.()
-        |> next(pid)
+        |> next(next_pid)
     end
-    do_loop(fun, pid)
+    do_loop(fun, next_pid)
   end
 
   # Helper
