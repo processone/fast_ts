@@ -41,9 +41,9 @@ defmodule FastTS.Stream.Pipeline do
   # TODO create a supervisor per pipeline, place each pipeline supervisor under a stream supervisor
   # TODO Optimize that: For now we create one ETS per loop. ETS table is only needed when we are using time buckets. We do not need to create it otherwise
   # TODO One table ETS per stateful pipeline stage is propably overkill. We may have one ETS table per stream or even one ETS table for all
-  # = More generally, I need to refactor how the state are kept
+  # = More generally, I need to refactor how the state are kept: Likely the best way is to have an Elixir agent per state.
   def set_loop_state(start_fun, pid) do
-    # TODO: for now the name is fix, so it will not work for many pipelines
+    # TODO: for now the name is fixed, so it will not work for many pipelines
     table = :ets.new(:pipeline_stage_data, [:public])
     add_event_fun = start_fun.(table, pid)
     do_loop(add_event_fun, pid)
