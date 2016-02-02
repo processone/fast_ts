@@ -6,12 +6,13 @@ defmodule FastTS.Stream.PipelineTest do
   end
 
   test "Create a one step pipeline" do
-    start_fun = fn(ets_table, next_pid) ->
+    test_pid = self
+    start_fun = fn _ets_table, next_pid ->
       send test_pid, {:from, :started, self}
       fn(event) -> event end
     end
     
-    {:ok, pid} = FastTS.Stream.Pipeline.start_link(:pipe1, [start_fun])
+    {:ok, _pid} = FastTS.Stream.Pipeline.start_link(:pipe1, [{:stateful, start_fun}])
     
     receive do
       {:from, :started, step1_pid} ->
