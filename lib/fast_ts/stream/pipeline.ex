@@ -2,7 +2,7 @@ defmodule FastTS.Stream.Pipeline do
   use GenServer
 
   @type pipeline :: list({:stateful, fun}|{:stateless, fun})
-  @spec start_link(name :: string, pipeline :: pipeline) :: :ignore | {:error, any} | {:ok, pid}
+  @spec start_link(name :: String.t, pipeline :: pipeline) :: :ignore | {:error, any} | {:ok, pid}
   def start_link(_name, []), do: :ignore
   def start_link(name, pipeline) do
     GenServer.start_link(__MODULE__, [name, pipeline])
