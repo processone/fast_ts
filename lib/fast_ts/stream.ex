@@ -2,6 +2,10 @@
 defmodule FastTS.Stream do
   alias RiemannProto.Event
 
+    # TODO: I think the block need to be able to receive the module
+    # the pipeline is living in to read module attributes, to pass or
+    # overload special configuration informations
+  
   # == Output functions ==
   
   @doc """
@@ -10,6 +14,30 @@ defmodule FastTS.Stream do
   def stdout, do: {:stateless, &do_stdout/1}
   def do_stdout(event) do
     IO.puts "#{inspect event}"
+    event
+  end
+
+  @doc """
+  Sends an email
+  """
+  def email(to_address), do: {:stateless, &(do_email(&1, to_address))}
+  def do_email(event = %Event{metric_f: _metric}, to_address) do
+    # TODO: Move configuration in standard config.exs and / or in module attributes
+    config =  %Mailman.Context{
+      config: %Mailman.SmtpConfig{
+        relay: "localhost",
+        port: 1025,
+        auth: :never}
+    }
+    # Compose email
+    email = %Mailman.Email{
+     subject: "#{event.host} #{event.service} #{event.state}",
+      from: "no-reply@process-one.net",
+      to: [ to_address ],
+      # TODO show "No Description" if there is no description
+      text: "#{event.host} #{event.service} #{event.state}\nat {event time}\n\n#{event.description}"
+      }
+    Mailman.deliver(email, config)
     event
   end
 

@@ -1,3 +1,12 @@
+# Multiple format
+
+To have a generic streaming tool, we need to support multiple format:
+
+* Metrics: We support the Riemann format for metrics.
+* Message: We support the Node Red format for messages.
+
+Some blocks can handle both, other type of blocks will just drop the
+content of unknown "packet" types.
 
 # Improvement for Elixir protobuf support
 

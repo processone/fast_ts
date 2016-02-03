@@ -18,6 +18,7 @@ defmodule FastTS.Mixfile do
 
   defp deps(:prod) do
     [{:exprotobuf, "~> 0.11.0"},
+     {:mailman, "~> 0.2.1"},
      {:exrm, "~> 1.0.0-rc7"}]
   end
   

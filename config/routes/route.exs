@@ -13,6 +13,7 @@ defmodule HelloFast.Router do
   # TODO We need to add more consistency checks on the content of the pipeline
   pipeline "Second pipeline" do
     rate(5)
+    email("mremond@process-one.net")
     stdout
   end
 
