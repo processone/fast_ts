@@ -52,12 +52,15 @@ defmodule FastTS.Server do
   defp process_data(data) do
     RiemannProto.Msg.decode(data)
     |> extract_events
+    |> Enum.map(&ensure_timestamp/1)
     |> Enum.map(&stream_event/1)
   end
   
   defp extract_events(%RiemannProto.Msg{events: events}), do: events
   defp extract_events(_), do: []
 
+  defp ensure_timestamp(event = %RiemannProto.Event{time: nil}), do: %{event | time: System.system_time(:seconds)}
+  
   defp stream_event(event) do
     # TODO:
     # - Catch to avoid crash and report errors

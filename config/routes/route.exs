@@ -1,11 +1,10 @@
 defmodule HelloFast.Router do
   use FastTS.Router
 
-  @mail %{from: "mremond@test.com"}
-  
   pipeline "Basic pipeline" do
     # We only take functions under a given value
     under(12)
+    email("mremond@test.com")
     stdout
   end
   
@@ -13,7 +12,6 @@ defmodule HelloFast.Router do
   # TODO We need to add more consistency checks on the content of the pipeline
   pipeline "Second pipeline" do
     rate(5)
-    email("mremond@process-one.net")
     stdout
   end
 

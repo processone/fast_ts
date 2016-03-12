@@ -18,26 +18,26 @@ defmodule FastTS.Stream do
   end
 
   @doc """
-  Sends an email
+  Sends an email. Mailman module is used to send email.
+  You can define email sending parameters in `config.exs` file as follow:
+
+  # Configure MailMan to be able to send email
+  config :mailman,
+    relay: "localhost",
+    port: 1025,
+    auth: :never
   """
   def email(to_address), do: {:stateless, &(do_email(&1, to_address))}
   def do_email(event = %Event{metric_f: _metric}, to_address) do
-    # TODO: Move configuration in standard config.exs and / or in module attributes
-    config =  %Mailman.Context{
-      config: %Mailman.SmtpConfig{
-        relay: "localhost",
-        port: 1025,
-        auth: :never}
-    }
     # Compose email
     email = %Mailman.Email{
      subject: "#{event.host} #{event.service} #{event.state}",
       from: "no-reply@process-one.net",
       to: [ to_address ],
       # TODO show "No Description" if there is no description
-      text: "#{event.host} #{event.service} #{event.state}\nat {event time}\n\n#{event.description}"
+      text: "#{event.host} #{event.service} #{event.state} (#{event.metric_f})\nat #{Common.epoch_to_string(event.time)}\n\n#{event.description}"
       }
-    Mailman.deliver(email, config)
+    Mailman.deliver(email, %Mailman.Context{})
     event
   end
 
@@ -99,7 +99,7 @@ defmodule FastTS.Stream do
   # TODO: when we want to stop stream, we need to stop timer
   defp partition_time(context, interval, create, add, finish) do
     create.()
-    startTS = :erlang.system_time(:seconds)
+    startTS = System.system_time(:seconds)
     :timer.apply_interval(interval * 1000, Kernel, :apply, [ __MODULE__, :switch_partition, [context, startTS, create, finish]])
     add
   end
@@ -109,7 +109,7 @@ defmodule FastTS.Stream do
   def switch_partition(context, startTS, create, finish) do
     dataMap = FastTS.Stream.Context.get_all(context)
     create.()
-    endTS = :erlang.system_time(:seconds)
+    endTS = System.system_time(:seconds)
     finish.(dataMap, startTS, endTS)
   end
 end
@@ -117,3 +117,5 @@ end
 # function:
 # info -> log object to file
 # Elixir: Several log levels
+
+# Event.time is unix time in seconds

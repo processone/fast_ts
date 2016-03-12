@@ -5,3 +5,8 @@ use Mix.Config
 # route_dir can be overriden from environment variable: FTS_ROUTE_DIR
 config :fast_ts, route_dir: "config/routes"
 
+# Configure MailMan to be able to send email
+config :mailman,
+  relay: "localhost",
+  port: 1025,
+  auth: :never
