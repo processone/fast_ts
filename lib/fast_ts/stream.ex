@@ -5,9 +5,9 @@ defmodule FastTS.Stream do
     # TODO: I think the block need to be able to receive the module
     # the pipeline is living in to read module attributes, to pass or
     # overload special configuration informations
-  
+
   # == Output functions ==
-  
+
   @doc """
   Prints event struct on stdout
   """
@@ -42,7 +42,7 @@ defmodule FastTS.Stream do
   end
 
   # == Filter functions ==
-  
+
   @doc """
   Passes on events only when their metric is smaller than x
   """
@@ -56,13 +56,27 @@ defmodule FastTS.Stream do
     end
   end
 
+  @doc """
+  Passes on events only when their metric is greater than x
+  """
+  def over(value), do: {:stateless, &(do_over(&1, value))}
+  def do_over(event = %Event{metric_f: metric}, value) do
+    cond do
+      metric > value ->
+        event
+      true ->
+        nil
+    end
+  end
+
+
   # == Statefull processing functions ==
-  
+
   @doc """
   Calculate rate of a given event per second, assuming metric is an occurence count
-  
+
   Bufferize events for N second interval and divide total count by interval in second.
-  On interval tick: 
+  On interval tick:
   - passes the last event down the pipe, with metric remplaced with rate per second. Note that if event types are
     not homogeneous they would need to be filter / sorted properly before.
   - Send a nil event down the pipe so that other pipe element can decide to generate one to fill the void
@@ -95,7 +109,7 @@ defmodule FastTS.Stream do
                      end
                    end)
   end
-  
+
   # TODO: when we want to stop stream, we need to stop timer
   defp partition_time(context, interval, create, add, finish) do
     create.()

@@ -3,11 +3,11 @@ defmodule HelloFast.Router do
 
   pipeline "Basic pipeline" do
     # We only take functions under a given value
-    under(12)
+    over(12)
     email("mremond@test.com")
     stdout
   end
-  
+
   # For now, we assume that we can only put pipeline function in the block
   # TODO We need to add more consistency checks on the content of the pipeline
   pipeline "Second pipeline" do
@@ -17,7 +17,7 @@ defmodule HelloFast.Router do
 
   pipeline "Empty pipeline are ignored" do
   end
-  
+
   # TODO we need filter / matching
   # pipeline localhost(%Event{host: "localhost"}) do
   #   rate(5)
@@ -28,5 +28,5 @@ defmodule HelloFast.Router do
   #   filter(is_server(%Event{host: "localhost"}))
   #   IO.puts "We are running pipeline CRaB"
   # end
-  
+
 end
