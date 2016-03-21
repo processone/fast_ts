@@ -60,6 +60,7 @@ defmodule FastTS.Server do
   defp extract_events(_), do: []
 
   defp ensure_timestamp(event = %RiemannProto.Event{time: nil}), do: %{event | time: System.system_time(:seconds)}
+  defp ensure_timestamp(event = %RiemannProto.Event{}), do: event
   
   defp stream_event(event) do
     # TODO:
