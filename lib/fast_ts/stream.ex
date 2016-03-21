@@ -76,6 +76,33 @@ defmodule FastTS.Stream do
   def do_scale(event = %Event{metric_f: metric}, factor), do: %{event | metric_f:  metric * factor}
 
 
+  @doc """
+  Generic filtering. Filter events based on given function.
+  The filtering function should no have side effects and must return true|false or fail with FunctionClauseError
+  """
+  def filter(f), do: {:stateless, &(do_filter(&1, f))}
+  def do_filter(event = %Event{}, f) do 
+          try do
+                  if f.(event) do
+                          event
+                  else
+                          nil
+                  end
+          rescue 
+                FunctionClauseError -> nil 
+                # treat these as false. Allows easy filtering like fn %Event{service :"some"} -> true end
+                # without having to provide the false clause
+          end
+
+  end
+
+  @doc """
+  Generic map. Map (project) events using the given map function.
+  The map function should no have side effects
+  """
+  def map(f), do: {:stateless, &(do_map(&1, f))}
+  def do_map(event = %Event{}, f), do: f.(event) 
+
   # == Statefull processing functions ==
 
   @doc """
