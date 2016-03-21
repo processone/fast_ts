@@ -69,6 +69,12 @@ defmodule FastTS.Stream do
     end
   end
 
+  @doc """
+  Scale metrics by the given factor
+  """
+  def scale(factor), do: {:stateless, &(do_scale(&1, factor))}
+  def do_scale(event = %Event{metric_f: metric}, factor), do: %{event | metric_f:  metric * factor}
+
 
   # == Statefull processing functions ==
 

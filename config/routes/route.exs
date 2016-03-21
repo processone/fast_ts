@@ -18,6 +18,11 @@ defmodule HelloFast.Router do
   pipeline "Empty pipeline are ignored" do
   end
 
+  pipeline "Scale metrics" do
+  scale(15)
+  stdout
+  end
+
   # TODO we need filter / matching
   # pipeline localhost(%Event{host: "localhost"}) do
   #   rate(5)
