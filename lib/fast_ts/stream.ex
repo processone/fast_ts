@@ -133,6 +133,37 @@ defmodule FastTS.Stream do
   end
 
   @doc """
+  Generic change detection.
+  Detect changes in f(ev) for ev grouped in g(ev).
+  Events that remains stable aren't propagated.
+  """
+  def change(f,init, g), do: {:stateful, &(change(&1, &2, f, init, g))}
+  def change(context, pid, f, init, g) do
+    fn(ev) ->
+        group = g.(ev)
+        current = f.(ev)
+        prev = FastTS.Stream.Context.get(context, group)
+        prev = if is_nil(prev), do: init, else: prev
+        if prev == current do
+            nil
+        else
+            FastTS.Stream.Context.put(context, group, current)
+            ev
+        end
+    end
+  end
+
+  @doc """
+  Detect changes in state grouped by {host,service} pairs
+  For a more general change detector use change/3 instead
+  """
+  def change_state(init) do
+      f =  fn %Event{state: state} -> state end
+      g =  fn %Event{host: host, service: service} -> {host, service} end
+      {:stateful, &(change(&1, &2, f, init, g))}
+  end
+
+  @doc """
   Calculate rate of a given event per second, assuming metric is an occurence count
 
   Bufferize events for N second interval and divide total count by interval in second.

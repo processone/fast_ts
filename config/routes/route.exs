@@ -34,6 +34,18 @@ defmodule HelloFast.Router do
   stdout
   end
 
+  pipeline "State change detection" do
+  change_state("up")
+  stdout
+  end
+
+  pipeline "Generic change detection" do
+  # This has the same effect than the State change detection pipeline
+  change(fn %Event{state: state} -> state end, "up",
+                fn %Event{host: host, service: service} -> {host, service} end)
+  stdout
+  end
+
   # TODO we need filter / matching
   # pipeline localhost(%Event{host: "localhost"}) do
   #   rate(5)
@@ -44,5 +56,6 @@ defmodule HelloFast.Router do
   #   filter(is_server(%Event{host: "localhost"}))
   #   IO.puts "We are running pipeline CRaB"
   # end
+
 
 end
