@@ -35,13 +35,13 @@ defmodule HelloFast.Router do
   end
 
   pipeline "State change detection" do
-  change_state("up")
+  changed_state("up")
   stdout
   end
 
   pipeline "Generic change detection" do
   # This has the same effect than the State change detection pipeline
-  change(fn %Event{state: state} -> state end, "up",
+  changed(fn %Event{state: state} -> state end, "up",
                 fn %Event{host: host, service: service} -> {host, service} end)
   stdout
   end

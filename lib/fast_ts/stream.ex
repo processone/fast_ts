@@ -137,8 +137,8 @@ defmodule FastTS.Stream do
   Detect changes in f(ev) for ev grouped in g(ev).
   Events that remains stable aren't propagated.
   """
-  def change(f,init, g), do: {:stateful, &(change(&1, &2, f, init, g))}
-  def change(context, pid, f, init, g) do
+  def changed(f,init, g), do: {:stateful, &(changed(&1, &2, f, init, g))}
+  def changed(context, pid, f, init, g) do
     fn(ev) ->
         group = g.(ev)
         current = f.(ev)
@@ -155,12 +155,12 @@ defmodule FastTS.Stream do
 
   @doc """
   Detect changes in state grouped by {host,service} pairs
-  For a more general change detector use change/3 instead
+  For a more general change detector use changed/3 instead
   """
-  def change_state(init) do
+  def changed_state(init) do
       f =  fn %Event{state: state} -> state end
       g =  fn %Event{host: host, service: service} -> {host, service} end
-      {:stateful, &(change(&1, &2, f, init, g))}
+      {:stateful, &(changed(&1, &2, f, init, g))}
   end
 
   @doc """
