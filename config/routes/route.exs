@@ -31,6 +31,9 @@ defmodule HelloFast.Router do
   pipeline "tag" do
   tag("tag1") #add single tag
   tag(["tag2", "tag1", "tag3"]) #add multiple tags. Duplicates are removed
+  tagged_all("tag3")
+  tagged_all(["tag2", "test"])
+  tagged_any(["tag1", "apsdfgfy"])
   stdout
   end
 

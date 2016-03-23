@@ -109,6 +109,17 @@ defmodule FastTS.Stream do
         %{event | tags: Enum.uniq(Enum.concat(tags, new_tags))}
   end
 
+  def tagged_all(tag), do: {:stateless, &do_tagged_all(&1, (if is_list(tag), do: tag , else: [tag] ))}
+  def do_tagged_all(event = %Event{tags: tagged}, tags) do
+        if Enum.all?(tags, fn t ->  Enum.member? tagged, t end), do: event, else: nil
+  end
+
+  def tagged_any(tag), do: {:stateless, &do_tagged_any(&1, (if is_list(tag), do: tag , else: [tag] ))}
+  def do_tagged_any(event = %Event{tags: tagged}, tags) do
+        if Enum.any?(tags, fn t ->  Enum.member? tagged, t end), do: event, else: nil
+  end
+
+
   # == Statefull processing functions ==
   
   def throttle(n, secs), do: {:stateful, &(throttle(&1, &2, n, secs))}
