@@ -46,6 +46,11 @@ defmodule HelloFast.Router do
   stdout
   end
 
+  pipeline "consecutive runs" do
+  runs(3, fn %Event{state: state} -> state end)
+  stdout
+  end
+
   # TODO we need filter / matching
   # pipeline localhost(%Event{host: "localhost"}) do
   #   rate(5)

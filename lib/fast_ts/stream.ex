@@ -162,6 +162,28 @@ defmodule FastTS.Stream do
       g =  fn %Event{host: host, service: service} -> {host, service} end
       {:stateful, &(changed(&1, &2, f, init, g))}
   end
+  
+  @doc """
+  n events must have the same computed value.  Pass the last one of the n
+  """
+  def runs(n, f), do: {:stateful, &(runs(&1, &2, n, f))}
+  def runs(context, pid, n, f) do
+    fn(ev) ->
+        current = f.(ev)
+        runs = FastTS.Stream.Context.get(context, :runs)
+        case runs do
+            {^current, l} when l >= n ->
+                ev
+            {^current, l} ->
+                FastTS.Stream.Context.put(context, :runs, {current, l + 1})
+                nil
+            _ ->
+                # This is the first one detected, next o one is expected to be number 2
+                FastTS.Stream.Context.put(context, :runs, {current, 2})
+                nil
+        end
+    end
+  end
 
   @doc """
   Calculate rate of a given event per second, assuming metric is an occurence count
