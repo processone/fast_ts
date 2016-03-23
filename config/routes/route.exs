@@ -51,6 +51,11 @@ defmodule HelloFast.Router do
   stdout
   end
 
+  pipeline "throttle" do
+  throttle(2,5)  #at most 2 events each 5 seconds
+  stdout
+  end
+
   # TODO we need filter / matching
   # pipeline localhost(%Event{host: "localhost"}) do
   #   rate(5)

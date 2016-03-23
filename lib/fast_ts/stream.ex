@@ -104,6 +104,25 @@ defmodule FastTS.Stream do
   def do_map(event = %Event{}, f), do: f.(event) 
 
   # == Statefull processing functions ==
+  
+  def throttle(n, secs), do: {:stateful, &(throttle(&1, &2, n, secs))}
+  def throttle(context, pid, n, secs) do
+    fn(ev) ->
+        now =  System.system_time(:seconds)
+        case FastTS.Stream.Context.get(context, :throttle) do
+            {start, count} when (now - start <= secs) and count >= n ->
+                nil #these ones are to be discarded
+            {start, count} when (now - start <= secs) and count < n ->
+                FastTS.Stream.Context.put(context, :throttle, {start, count + 1})
+                ev
+            _ ->
+                # first time, or previous window already expired.  Create new window.
+                FastTS.Stream.Context.put(context, :throttle, {now, 1})
+                ev
+        end
+    end
+  end
+
   @doc """
   Stable output.  Output stable events.  It is defined as stable if for all events e_1,e_2,e_n
   in n sec,  f(e_1) = f(e_2) = f(e_3)
