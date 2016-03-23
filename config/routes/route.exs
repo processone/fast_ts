@@ -48,6 +48,16 @@ defmodule HelloFast.Router do
   stdout
   end
 
+  pipeline "stream reduce" do
+  sreduce(fn(%Event{metric_f: f1}, %Event{metric_f: f2} = e) ->  %{e | metric_f: max(f1, f2)} end)
+  stdout
+  end
+
+  pipeline "stream reduce with initial val" do
+  sreduce(fn(%Event{metric_f: f1}, %Event{metric_f: f2} = e) ->  %{e | metric_f: max(f1, f2)} end, %Event{metric_f: 100})
+  stdout
+  end
+
   pipeline "Generic change detection" do
   # This has the same effect than the State change detection pipeline
   changed(fn %Event{state: state} -> state end, "up",

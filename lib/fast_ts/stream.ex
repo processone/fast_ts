@@ -121,7 +121,23 @@ defmodule FastTS.Stream do
 
 
   # == Statefull processing functions ==
-  
+  def sreduce(f), do: sreduce(f, :first_event)
+  def sreduce(f, init), do: {:stateful, &(sreduce(&1, &2, f, init))}
+  def sreduce(context, pid, f, init) do
+    fn ev ->
+        new = case {FastTS.Stream.Context.get(context, :sreduce), init} do
+            {nil, :first_event} ->
+                f.(ev, ev)
+            {nil, val} ->
+                f.(val, ev)
+            {prev, _} ->
+                f.(prev, ev)
+        end
+        FastTS.Stream.Context.put(context, :sreduce, new)
+        new
+    end
+  end
+
   def throttle(n, secs), do: {:stateful, &(throttle(&1, &2, n, secs))}
   def throttle(context, pid, n, secs) do
     fn(ev) ->
