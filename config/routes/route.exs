@@ -28,6 +28,12 @@ defmodule HelloFast.Router do
   stdout
   end
 
+  pipeline "tag" do
+  tag("tag1") #add single tag
+  tag(["tag2", "tag1", "tag3"]) #add multiple tags. Duplicates are removed
+  stdout
+  end
+
   pipeline "Generic filtering and mapping" do
   filter(fn %Event{service: "eth0" <> _} -> true end)   #filter events with service starting with "eth0".  
   map(fn x -> %{x | service: "net"} end)  

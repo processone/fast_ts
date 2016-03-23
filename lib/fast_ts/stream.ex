@@ -103,6 +103,12 @@ defmodule FastTS.Stream do
   def map(f), do: {:stateless, &(do_map(&1, f))}
   def do_map(event = %Event{}, f), do: f.(event) 
 
+
+  def tag(tag), do: {:stateless, &do_tag(&1, (if is_list(tag), do: tag , else: [tag] ))}
+  def do_tag(event = %Event{tags: tags}, new_tags) do
+        %{event | tags: Enum.uniq(Enum.concat(tags, new_tags))}
+  end
+
   # == Statefull processing functions ==
   
   def throttle(n, secs), do: {:stateful, &(throttle(&1, &2, n, secs))}
