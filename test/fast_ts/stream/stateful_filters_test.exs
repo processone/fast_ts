@@ -43,4 +43,51 @@ defmodule StatefulFiltersTest do
   end
 
 
+  test "changed_state" , %{context: context} do
+    {:stateful, cf} = FastTS.Stream.changed_state("ok")
+    f = cf.(context, self())
+    ev1 = %{create(:event) | service: "s1"}
+    ev2 = %{create(:event) | service: "s2"}
+    assert nil ==  f.(%{ev1 | state: "ok"})
+    assert nil ==  f.(%{ev1 | state: "ok"})
+    assert %{ev1 | state: "down"} ==  f.(%{ev1 | state: "down"})
+    assert nil ==  f.(%{ev2 | state: "ok"})
+    assert nil ==  f.(%{ev1 | state: "down"})
+    assert %{ev2 | state: "down"} ==  f.(%{ev2 | state: "down"})
+    assert %{ev2 | state: "ok"} ==  f.(%{ev2 | state: "ok"})
+    assert nil ==  f.(%{ev2 | state: "ok"})
+    assert nil ==  f.(%{ev1 | state: "down"})
+  end
+
+  test "general change detector" , %{context: context} do
+    {:stateful, cf} = FastTS.Stream.changed(fn %Event{metric_f: n} -> n end, 0, fn _ -> :some end) #just group all in together
+    f = cf.(context, self())
+    ev1 = %{create(:event) | service: "s1"}
+    ev2 = %{create(:event) | service: "s2"}
+    assert nil ==  f.(%{ev1 | metric_f: 0})
+    assert nil ==  f.(%{ev2 | metric_f: 0})
+    assert %{ev1 | metric_f: 1} ==  f.(%{ev1 | metric_f: 1})
+    assert nil ==  f.(%{ev2 | metric_f: 1})
+    assert %{ev2 | metric_f: 2} ==  f.(%{ev2 | metric_f: 2})
+  end
+
+
+  test "consecutive runs", %{context: context} do
+    {:stateful, cf} = FastTS.Stream.runs(3, fn %Event{state: s} -> s end)
+    f = cf.(context, self())
+    ev = create(:event)
+    assert nil == f.(%{ev | state: "ok"})
+    assert nil == f.(%{ev | state: "ok"})
+    assert %{ev | state: "ok"} == f.(%{ev | state: "ok"})
+    assert %{ev | state: "ok"} == f.(%{ev | state: "ok"})
+    assert nil == f.(%{ev | state: "down"})
+    assert nil == f.(%{ev | state: "ok"})
+    assert nil == f.(%{ev | state: "down"})
+    assert nil == f.(%{ev | state: "down"})
+    assert %{ev | state: "down"} == f.(%{ev | state: "down"})
+    assert %{ev | state: "down"} == f.(%{ev | state: "down"})
+  end
+
+  #TODO: see how to mock time/timeouts
+
 end
