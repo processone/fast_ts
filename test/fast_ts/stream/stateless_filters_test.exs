@@ -1,5 +1,6 @@
 defmodule StatelessFiltersTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
+
   alias RiemannProto.Event
   import FastTSTestHelper
 

@@ -125,16 +125,18 @@ defmodule FastTS.Stream do
   def sreduce(f, init), do: {:stateful, &(sreduce(&1, &2, f, init))}
   def sreduce(context, pid, f, init) do
     fn ev ->
-        new = case {FastTS.Stream.Context.get(context, :sreduce), init} do
+        {new,output} = case {FastTS.Stream.Context.get(context, :sreduce), init} do
             {nil, :first_event} ->
-                f.(ev, ev)
+                {f.(ev, ev), nil}
             {nil, val} ->
-                f.(val, ev)
+                r = f.(val, ev)
+                {r, r}
             {prev, _} ->
-                f.(prev, ev)
+                r = f.(prev, ev)
+                {r, r}
         end
         FastTS.Stream.Context.put(context, :sreduce, new)
-        new
+        output
     end
   end
 
