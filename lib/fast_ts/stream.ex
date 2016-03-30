@@ -239,6 +239,27 @@ defmodule FastTS.Stream do
     end
   end
 
+
+  def rate2(interval), do:{:stateful, &(do_rate2(interval)),{0,nil,nil}, [:mt] }
+	def do_rate2(interval, do: children) do
+		fn ({0, nil, nil}, %Event{metric_f: metric}=ev) ->
+				  #first event received
+					new_state = {metric, current_ts,ev}
+					{new_state, timeout: interval}
+				({count, initial_ts, _}, %Event{metric_f: metric}=ev) ->
+				  #update counter,  calculate new timeout
+					new_state = {count + metric, initial_ts,ev}
+					{new_state, timeout: (interval - (current_ts - initial_ts)}
+				({count, initial_ts, last_ev}, timeout) ->
+					rate = count / (current_ts - initial_ts)
+					new_state = {0, current_ts, last_ev}
+					result = %{last_event | metric_f: rate}
+					{new_state, timeout: interval, downstream: {result, children}}
+
+		end
+	end
+
+
   @doc """
   Calculate rate of a given event per second, assuming metric is an occurence count
 

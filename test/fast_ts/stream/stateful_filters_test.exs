@@ -90,4 +90,22 @@ defmodule StatefulFiltersTest do
 
   #TODO: see how to mock time/timeouts
 
+
+	test "rate", %{context: context} do
+		{:stateful, f, state, [:mt]}  = rate2(1000) do: []
+		ev = {create(:event) | metric_f: 1}
+		ts = System.monotonic_time(:milli_seconds)
+		assert {state, timeout: 1000}  = f.(state, ev, mt: ts)
+		assert {state, timeout: 500}  = f.(state, ev, mt: ts + 500)
+		expected = %{ev | metric_f: 2}
+		assert {state, timeout: 1000, downstream:{^expected,[]} = 
+								f.(state, timeout, mt: ts + 1000)
+		assert {state, timeout: 500} = f.(state, ev, mt: ts + 1500)
+		assert {state, timeout: 400} = f.(state, ev, mt: ts + 1500)
+		assert {state, timeout: 400} = f.(state, ev, mt: ts + 1500)
+		expected = %{ev | metric_f: 3}
+		assert {state, timeout: 1000, downstream:{^expected, []} = 
+			f.(state, timeout, mt: ts + 2000)
+	end
+
 end
