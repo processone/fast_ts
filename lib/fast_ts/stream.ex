@@ -240,25 +240,51 @@ defmodule FastTS.Stream do
   end
 
 
-  def rate2(interval), do:{:stateful, &(do_rate2(interval)),{0,nil,nil}, [:mt] }
-	def do_rate2(interval, do: children) do
-		fn ({0, nil, nil}, %Event{metric_f: metric}=ev) ->
+  @doc """
+  Interval is in seconds
+  """
+  def rate2(interval, downstreams), do: {:flowop, do_rate2(interval * 1000),{0,nil,nil}, [:mt], downstreams}
+	def do_rate2(interval) do
+		fn ({0, nil, nil}, %Event{metric_f: metric}=ev, mt: current_ts) ->
 				  #first event received
 					new_state = {metric, current_ts,ev}
-					{new_state, timeout: interval}
-				({count, initial_ts, _}, %Event{metric_f: metric}=ev) ->
+					{new_state, [], interval}
+				({count, initial_ts, _}, %Event{metric_f: metric}=ev, mt: current_ts) ->
 				  #update counter,  calculate new timeout
 					new_state = {count + metric, initial_ts,ev}
-					{new_state, timeout: (interval - (current_ts - initial_ts)}
-				({count, initial_ts, last_ev}, timeout) ->
-					rate = count / (current_ts - initial_ts)
+					{new_state, [], (interval - (current_ts - initial_ts))}
+				({count, initial_ts, last_ev}, :timeout, mt: current_ts) ->
+          elapsed_secs = (current_ts - initial_ts) / 1000
+					rate = count /  elapsed_secs
 					new_state = {0, current_ts, last_ev}
-					result = %{last_event | metric_f: rate}
-					{new_state, timeout: interval, downstream: {result, children}}
-
+					result = %{last_ev | metric_f: rate}
+					{new_state, [do: result], interval}
 		end
 	end
 
+
+  defp fwraper(f, ev) do
+    try do
+            f.(ev)
+    rescue 
+          FunctionClauseError -> false 
+    end
+  end
+
+  def print2(), do: {:flowop, fn(state,ev,opts) -> 
+                  IO.puts "#{inspect ev}"
+                  {state, [], :infinity}
+                  end, nil, [], []}
+  def map2(f, downstreams), do: {:flowop, fn(state,ev,opts) -> {nil, [do: f.(ev)], :infinity} end, nil, [], downstreams}
+  def scale2(s, downstreams), do: {:flowop, fn(state,%Event{metric_f: m}=ev,opts) -> {nil, [do: %{ev | metric_f: m* s}], :infinity} end, nil, [], downstreams}
+  def over2(v, downstreams), do: {:flowop, fn(state,%Event{metric_f: m}=ev,opts) -> {nil, if(m > v, do: [do: ev], else: []), :infinity} end, nil, [], downstreams}
+
+  def split(f, downstreams) do
+    {:flowop,  fn(state, ev, opts) -> {state, if(fwraper(f,ev), do: [do: ev], else: [else: ev]), :infinity} end, nil, [], downstreams}
+  end
+  def filter2(f, downstreams) do 
+    split(f, Keyword.put(downstreams, :else, []))
+  end
 
   @doc """
   Calculate rate of a given event per second, assuming metric is an occurence count
@@ -314,6 +340,8 @@ defmodule FastTS.Stream do
     endTS = System.system_time(:seconds)
     finish.(dataMap, startTS, endTS)
   end
+
+
 end
 
 # function:

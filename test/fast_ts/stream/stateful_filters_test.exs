@@ -91,21 +91,25 @@ defmodule StatefulFiltersTest do
   #TODO: see how to mock time/timeouts
 
 
-	test "rate", %{context: context} do
-		{:stateful, f, state, [:mt]}  = rate2(1000) do: []
-		ev = {create(:event) | metric_f: 1}
+
+  #pass N blocks  "do" block and "else" block
+  #para continuar, el stateful le pasa el key del block al que tiene que seguir invocando
+
+	test "rate2", %{context: context} do
+		{:flowop, f, state, [:mt], kv_downstream}  = FastTS.Stream.rate2 1, do: nil
+		ev = %{create(:event) | metric_f: 1}
 		ts = System.monotonic_time(:milli_seconds)
-		assert {state, timeout: 1000}  = f.(state, ev, mt: ts)
-		assert {state, timeout: 500}  = f.(state, ev, mt: ts + 500)
-		expected = %{ev | metric_f: 2}
-		assert {state, timeout: 1000, downstream:{^expected,[]} = 
-								f.(state, timeout, mt: ts + 1000)
-		assert {state, timeout: 500} = f.(state, ev, mt: ts + 1500)
-		assert {state, timeout: 400} = f.(state, ev, mt: ts + 1500)
-		assert {state, timeout: 400} = f.(state, ev, mt: ts + 1500)
-		expected = %{ev | metric_f: 3}
-		assert {state, timeout: 1000, downstream:{^expected, []} = 
-			f.(state, timeout, mt: ts + 2000)
+		assert {state, [], 1000}  = f.(state, ev, mt: ts)
+		assert {state, [], 500}  = f.(state, ev, mt: ts + 500)
+		expected = %{ev | metric_f: 2.0}
+		assert {state, [do: ^expected], 1000} = 
+								f.(state, :timeout, mt: ts + 1000)
+		assert {state, [], 500} = f.(state, ev, mt: ts + 1500)
+		assert {state, [], 400} = f.(state, ev, mt: ts + 1600)
+		assert {state, [], 400} = f.(state, ev, mt: ts + 1600)
+		expected = %{ev | metric_f: 3.0}
+		assert {state, [do: ^expected], 1000} = 
+			f.(state, :timeout, mt: ts + 2000)
 	end
 
 end
