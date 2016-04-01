@@ -31,21 +31,31 @@ defmodule FastTS.Stream.Filter do
 
   defp opts([]), do: []
   defp opts([:mt|rest]), do: [{:mt, System.monotonic_time(:milli_seconds)} | opts(rest)]
+  defp opts([_|rest]), do: opts(rest)
 
 
-  defp flow([], downstreams), do: :ok
-  defp flow([{key,ev} | rest], downstreams) do
-    case Keyword.fetch downstreams, key do 
-      {:ok, pids} -> Enum.each pids, &(send(&1, ev))
-      :error -> :ok
+  defp flow([], downstreams, template), do: downstreams
+  defp flow([{key,ev} | rest], downstreams, template) do
+    updated_downstreams = case List.keyfind(downstreams, key, 0, :not_found) do 
+      {key, pids} -> 
+        Enum.each pids, &(send(&1, ev))
+        downstreams
+      :not_found -> 
+        case template do
+           :nil  -> downstreams
+           t ->  
+            new_child = start(t)
+            send(new_child, ev)
+            [{key, [new_child]} | downstreams]
+        end
     end
-    flow(rest, downstreams) 
+    flow(rest, updated_downstreams, template) 
   end
 
   defp inject(ev, f, state, options, downstreams) do
     {new_state, output, timeout} = f.(state, ev, opts(options))
-    flow(output, downstreams)
-    loop(new_state, f, timeout, options, downstreams)
+    updated_downstreams = flow(output, downstreams, Keyword.get(options, :downstream_spec))
+    loop(new_state, f, timeout, options, updated_downstreams)
   end
      
 end

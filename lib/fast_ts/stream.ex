@@ -243,6 +243,10 @@ defmodule FastTS.Stream do
   @doc """
   Interval is in seconds
   """
+  def by(f, [do: downstream]) when not is_list(downstream), do: {:flowop, do_by(f), nil, [{:downstream_spec, downstream}], []}
+  def do_by(f), do: fn(state, ev, op) -> {state, [{f.(ev), ev}], :infinity} end
+
+
   def rate2(interval, downstreams), do: {:flowop, do_rate2(interval * 1000),{0,nil,nil}, [:mt], downstreams}
 	def do_rate2(interval) do
 		fn ({0, nil, nil}, %Event{metric_f: metric}=ev, mt: current_ts) ->
