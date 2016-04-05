@@ -1,5 +1,17 @@
 ** Work in progress **
 
+See filter.ex  test_pipeline for some sample one that show more advanced sharing and pipeline construction.
+Can be run with
+iex -S mix
+> FastTS.Stream.Filter.test_pipeline()
+
+
+Two sample pipelines.
+
+pipeline1:
+count # events /sec ,  per host. So will emit things like  {host1, 2}  {host2, 5}   , etc.
+
+pipeline2:
 Filter events that are "down".  Of those, split in two, one for "critical" service and the other for the rest.
 If it is "critical"  print it two times (note: that's not sequencial, it is two separate streams to where the event is sent,
 here just for testing both strams are simple a print)

@@ -243,8 +243,48 @@ defmodule FastTS.Stream do
   @doc """
   Interval is in seconds
   """
+
+
+  #TODO: this doesnt need to be stateful  really
+  def splitp(pred, expr, downstream_conditions) do
+    conditions = Enum.map (Enum.with_index downstream_conditions), fn {{cond, _downstream}, index} -> {String.to_atom("cond#{index}"), cond} end
+    downstreams = Enum.map (Enum.with_index downstream_conditions), fn {{_cond, downstream}, index} -> {String.to_atom("cond#{index}"), downstream} end
+    #IO.puts "downstreams: #{inspect downstreams}"
+    {:flowop, &do_splitp/3, {expr,pred, conditions}, [], downstreams}
+  end
+
+  def do_splitp(st={expr,predicate, conditions}, ev, []) do
+     val =  expr.(ev)
+     case Enum.find conditions, fn {c,v} -> predicate.(v, val) end do
+        nil -> #none match, discard the event
+          {st, [], :infinity}
+        {c, v} ->
+            #send throw the appropiate downstream
+          {st, [{c, ev}], :infinity}
+     end
+   end
+
+
+  def tag2(tag, [do: downstreams]), do: {:flowop, fn(state, ev, opts)-> {state, [do: do_tag2(ev, (if is_list(tag), do: tag , else: [tag] ))], :infinity} end, nil, [],[do: downstreams]}
+  def do_tag2(event = %Event{tags: tags}, new_tags) do
+        %{event | tags: Enum.uniq(Enum.concat(tags, new_tags))}
+  end
+
   def by(f, [do: downstream]) when not is_list(downstream), do: {:flowop, do_by(f), nil, [{:downstream_spec, downstream}], []}
   def do_by(f), do: fn(state, ev, op) -> {state, [{f.(ev), ev}], :infinity} end
+
+  def throttle2(n, dt, do: downstreams), do: {:flowop, do_throttle2(n, dt * 1000), nil, [:mt], do: downstreams}
+  def do_throttle2(max, interval) do
+    fn({n, end_ts}, %Event{}, mt: current_ts) when (end_ts > current_ts) and n >=  max->
+        { {n+1, end_ts}, [], :infinity}
+      ({n, end_ts}, %Event{} = ev, mt: current_ts) when (end_ts > current_ts) and n < max->
+        {{n+1, end_ts}, [do: ev], :infinity}
+      (_, %Event{} = ev, mt: current_ts) ->
+        #first time, or previous window already expired
+        {{1, current_ts + interval}, [do: ev], :infinity}
+    end
+  end
+
 
 
   def rate2(interval, downstreams), do: {:flowop, do_rate2(interval * 1000),{0,nil,nil}, [:mt], downstreams}
